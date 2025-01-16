@@ -28,7 +28,7 @@ class EbayConnector(BaseConnector):
         response.raise_for_status()
         return response.json()
 
-    def search_ebay_returns(
+    def search_returns(
         self,
         creation_date_range_from: Optional[str] = None,
         creation_date_range_to: Optional[str] = None,
