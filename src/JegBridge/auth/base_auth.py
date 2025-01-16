@@ -1,5 +1,6 @@
 import requests
 from abc import ABC, abstractmethod
+from typing import Callable, Optional, Dict
 from JegBridge.utils.custom_exceptions import RequestError
 
 class BaseAuth(ABC):
@@ -50,13 +51,20 @@ class BaseAuth(ABC):
         """
         pass
 
-    def make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
+    def make_request(
+        self,
+        method: str,
+        endpoint: str,
+        get_headers_callback: Optional[Callable[[], Dict[str, str]]] = None,
+        **kwargs
+    ) -> requests.Response:
         """
         Make an HTTP request with common error handling.
 
         Args:
             method (str): HTTP method (e.g., 'GET', 'POST').
             endpoint (str): Endpoint relative to the base URL.
+            get_headers_callback: Callable that returns headers dictionary. Defaults to `self.get_headers`.
             **kwargs: Additional arguments to pass to the `requests.request` method.
 
         Returns:
@@ -65,11 +73,13 @@ class BaseAuth(ABC):
         Raises:
             RequestError: If the request fails or returns a non-200 status code.
         """
+        if get_headers_callback is None:
+            get_headers_callback = self.get_headers
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
         # Merge default headers with any headers passed in kwargs
         headers = kwargs.pop("headers", {})
-        headers.update(self.get_headers())
+        headers.update(get_headers_callback())
 
         try:
             response = requests.request(

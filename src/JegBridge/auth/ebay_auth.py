@@ -1,6 +1,6 @@
 import requests
 import base64
-from typing import Optional
+from typing import Optional, Callable, Dict
 from JegBridge.auth.base_auth import BaseAuth
 
 # TODO WHEN RESOLVED: Fix refresh token functionality so only gets new token when needed. Deal with access token errors such as invalid or like how it is in sandbox since ebay's sandbox is broken
@@ -83,10 +83,68 @@ class EbayAuth(BaseAuth):
         response_json = response.json()
 
         self.access_token = response_json['access_token']
+
     def get_headers(self):
+        raise NotImplementedError
+    
+    def get_headers_with_bearer(self):
+        """
+        Get headers that pass bearer token, like for fulfillment api
+        """
         self.authenticate()
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",  # Required for JSON payloads
         }
         return headers
+    def get_headers_with_iaf(self):
+        """
+        Get headers that pass iaf token, like for post-order api
+        """
+        self.authenticate()
+        headers = {
+            "Authorization": f"IAF {self.access_token}",
+            "Content-Type": "application/json",  # Required for JSON payloads
+            "X-EBAY-C-MARKETPLACE-ID": "EBAY_US", 
+        }
+        return headers
+    
+    def make_request(
+        self,
+        method: str,
+        endpoint: str,
+        get_headers_callback: Optional[Callable[[], Dict[str, str]]] = None,
+        **kwargs
+    ) -> requests.Response:
+        """
+        Make an HTTP request with error handling for NotImplementedError.
+
+        Args:
+            method (str): HTTP method (e.g., 'GET', 'POST').
+            endpoint (str): Endpoint relative to the base URL.
+            get_headers_callback: Callable that returns headers dictionary. Defaults to `self.get_headers`.
+            **kwargs: Additional arguments to pass to the `requests.request` method.
+
+        Returns:
+            requests.Response: The response object.
+
+        Raises:
+            RequestError: If the request fails or returns a non-200 status code.
+            NotImplementedError: If `self.get_headers` is not overridden and used improperly.
+        """
+        if get_headers_callback is None:
+            get_headers_callback = self.get_headers  # Default to `self.get_headers`
+
+        try:
+            # Call the parent class's `make_request` method with the appropriate headers
+            return super().make_request(
+                method=method,
+                endpoint=endpoint,
+                get_headers_callback=get_headers_callback,
+                **kwargs,
+            )
+        except NotImplementedError:
+            raise NotImplementedError(
+                "The default `get_headers` method is not implemented. "
+                "Please provide a specific `get_headers_callback`, such as `get_headers_with_bearer` or `get_headers_with_iaf`."
+            )

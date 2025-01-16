@@ -23,5 +23,15 @@ class EbayConnector(BaseConnector):
     
     def get_order(self, order_id: str) -> dict:
         endpoint = f"sell/fulfillment/v1/order/{order_id}"
-        response = self.auth.make_request("GET",endpoint=endpoint)
+        response = self.auth.make_request("GET",endpoint=endpoint, get_headers_callback=self.auth.get_headers_with_bearer)
+        response.raise_for_status()
+        return response.json()
+
+    def get_return(self, order_id: str) -> dict:
+        endpoint = f"post-order/v2/return/search"
+        params = {
+            "order_id": order_id
+        }
+        response = self.auth.make_request("GET",endpoint=endpoint,  params=params, get_headers_callback=self.auth.get_headers_with_iaf)
+        response.raise_for_status()
         return response.json()

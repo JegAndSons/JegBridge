@@ -30,5 +30,14 @@ ebay_connector = EbayConnector(auth=ebay_auth)
 ebay_order_id = "12-12583-87541"
 amazon_order_id = "111-3749347-1157024"
 
-print(ebay_connector.get_order(ebay_order_id))
-print(amazon_connector.get_order(amazon_order_id))
+ebay_return_id = "5282832144"
+ebay_order_for_return_id = "08-12570-61105"
+
+response = ebay_connector.get_return(ebay_order_id)
+
+# response = ebay_connector.get_order(ebay_order_for_return_id)
+print(response)
+# import json
+# with open('return2.json', 'w') as json_file:
+#     json.dump(response, json_file, indent=4)
+
