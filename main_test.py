@@ -1,8 +1,34 @@
-from JegBridge.factories.connector_factory import ConnectorFactory
+import os
+from dotenv import load_dotenv
+from JegBridge.auth.amazon_auth import AmazonAuth
+from JegBridge.auth.ebay_auth import EbayAuth
+from JegBridge.connectors.amazon_connector import AmazonConnector
+from JegBridge.connectors.ebay_connector import EbayConnector
+
+load_dotenv()
+
+amazon_auth = AmazonAuth(
+    client_id=os.getenv("AMAZON_CLIENT_ID"),
+    client_secret=os.getenv("AMAZON_CLIENT_SECRET"),
+    refresh_token=os.getenv("AMAZON_REFRESH_TOKEN"),
+)
+ebay_auth = EbayAuth(
+    dev_client_id=os.getenv("EBAY_DEV_CLIENT_ID"),
+    dev_client_secret=os.getenv("EBAY_DEV_CLIENT_SECRET"),
+    dev_refresh_token=os.getenv("EBAY_DEV_REFRESH_TOKEN"),
+    prod_client_id=os.getenv("EBAY_PROD_CLIENT_ID"),
+    prod_client_secret=os.getenv("EBAY_PROD_CLIENT_SECRET"),
+    prod_refresh_token=os.getenv("EBAY_PROD_REFRESH_TOKEN"),
+)
+
+ebay_auth.use_production=True
 
 
-amazon_connector = ConnectorFactory.create_amazon_connector()
-ebay_connector = ConnectorFactory.create_ebay_connector()
+amazon_connector = AmazonConnector(auth=amazon_auth)
+ebay_connector = EbayConnector(auth=ebay_auth)
 
-print(amazon_connector.fetch_orders())
-print(ebay_connector.fetch_orders())
+ebay_order_id = "12-12583-87541"
+amazon_order_id = "111-3749347-1157024"
+
+print(ebay_connector.get_order(ebay_order_id))
+print(amazon_connector.get_order(amazon_order_id))

@@ -20,3 +20,8 @@ class EbayConnector(BaseConnector):
             {'ebay_order_id':4},
         ]
         return mock_orders
+    
+    def get_order(self, order_id: str) -> dict:
+        endpoint = f"sell/fulfillment/v1/order/{order_id}"
+        response = self.auth.make_request("GET",endpoint=endpoint)
+        return response.json()
