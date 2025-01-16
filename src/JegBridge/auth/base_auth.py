@@ -78,7 +78,6 @@ class BaseAuth(ABC):
                 headers=headers,
                 **kwargs,
             )
-            response.raise_for_status()
             return response
 
         except requests.exceptions.RequestException as e:
