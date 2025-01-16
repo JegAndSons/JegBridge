@@ -20,3 +20,11 @@ class AmazonConnector(BaseConnector):
             {'amazon_order_id':4},
         ]
         return mock_orders
+    
+    def get_order(self, order_id: str) -> dict:
+        """
+        Get specific order from Amazon
+        """
+        endpoint = f"/orders/v0/orders/{order_id}"
+        response = self.auth.make_request("GET",endpoint=endpoint)
+        return response.json()

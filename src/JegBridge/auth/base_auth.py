@@ -1,4 +1,6 @@
+import requests
 from abc import ABC, abstractmethod
+from JegBridge.utils.custom_exceptions import RequestError
 
 class BaseAuth(ABC):
     """
@@ -47,3 +49,39 @@ class BaseAuth(ABC):
             dict: A dictionary containing headers (e.g., Authorization tokens).
         """
         pass
+
+    def make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
+        """
+        Make an HTTP request with common error handling.
+
+        Args:
+            method (str): HTTP method (e.g., 'GET', 'POST').
+            endpoint (str): Endpoint relative to the base URL.
+            **kwargs: Additional arguments to pass to the `requests.request` method.
+
+        Returns:
+            dict: The response JSON as a dictionary.
+
+        Raises:
+            RequestError: If the request fails or returns a non-200 status code.
+        """
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        
+        # Merge default headers with any headers passed in kwargs
+        headers = kwargs.pop("headers", {})
+        headers.update(self.get_headers())
+
+        try:
+            response = requests.request(
+                method=method.lower(),
+                url=url,
+                headers=headers,
+                **kwargs,
+            )
+            response.raise_for_status()
+            return response
+
+        except requests.exceptions.RequestException as e:
+            raise RequestError(f"Request failed: {e}")
+        except ValueError as e:
+            raise RequestError(f"Failed to parse response JSON: {e}")
