@@ -3,8 +3,8 @@ import base64
 from typing import Optional
 from JegBridge.auth.base_auth import BaseAuth
 
-# DELETE ME WHEN RESOLVED: Fix refresh token functionality so only gets new token when needed. 
-# Deal with access token errors such as invalid or like how it is in sandbox since ebay's sandbox is broken
+# TODO WHEN RESOLVED: Fix refresh token functionality so only gets new token when needed. Deal with access token errors such as invalid or like how it is in sandbox since ebay's sandbox is broken
+
 class EbayAuth(BaseAuth):
     """
     eBay-specific authentication using API keys.
