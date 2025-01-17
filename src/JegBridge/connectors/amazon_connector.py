@@ -28,3 +28,24 @@ class AmazonConnector(BaseConnector):
         endpoint = f"/orders/v0/orders/{order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)
         return response.json()
+
+if __name__ == "__main__":
+    import os
+    from dotenv import load_dotenv
+    from JegBridge.auth.amazon_auth import AmazonAuth
+
+    load_dotenv()
+
+    auth = AmazonAuth(
+        client_id=os.getenv("AMAZON_CLIENT_ID"),
+        client_secret=os.getenv("AMAZON_CLIENT_SECRET"),
+        refresh_token=os.getenv("AMAZON_REFRESH_TOKEN"),
+        )
+    
+    connector = AmazonConnector(auth=auth)
+
+    order_id = "111-3749347-1157024"
+
+    order = connector.get_order(order_id)
+
+    print(order)
