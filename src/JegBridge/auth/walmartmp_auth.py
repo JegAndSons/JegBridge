@@ -21,7 +21,7 @@ class WalmartMPAuth(BaseAuth):
         production_url: str = None,
     ):
         """
-        Initialize the AmazonAuth object.
+        Initialize the WalmartAuth object.
 
         Args:
             client_id (str): Walamrt client ID.
