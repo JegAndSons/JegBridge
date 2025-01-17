@@ -2,6 +2,7 @@ import requests
 import base64
 from typing import Optional, Callable, Dict
 from JegBridge.auth.base_auth import BaseAuth
+from JegBridge.utils.custom_exceptions import AuthenticationError
 
 # TODO WHEN RESOLVED: Fix refresh token functionality so only gets new token when needed. Deal with access token errors such as invalid or like how it is in sandbox since ebay's sandbox is broken
 
@@ -92,6 +93,11 @@ class EbayAuth(BaseAuth):
         Get headers that pass bearer token, like for fulfillment api
         """
         self.authenticate()
+        # Ensure the access token exists before returning headers
+        if not self.access_token:
+            raise AuthenticationError(
+                "Unable to retrieve access token. Ensure that the authentication credentials are correct."
+            )
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",  # Required for JSON payloads
@@ -102,6 +108,11 @@ class EbayAuth(BaseAuth):
         Get headers that pass iaf token, like for post-order api
         """
         self.authenticate()
+        # Ensure the access token exists before returning headers
+        if not self.access_token:
+            raise AuthenticationError(
+                "Unable to retrieve access token. Ensure that the authentication credentials are correct."
+            )
         headers = {
             "Authorization": f"IAF {self.access_token}",
             "Content-Type": "application/json",  # Required for JSON payloads
