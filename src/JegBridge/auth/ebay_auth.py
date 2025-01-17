@@ -65,9 +65,9 @@ class EbayAuth(BaseAuth):
     def authenticate(self):
         refresh_url = f"{self.base_url}identity/v1/oauth2/token"
 
-        oath_string = f"{self.client_id}:{self.client_secret}"
-        encoded_oath_string = encode_base64(oath_string)
-        password = f"Basic {encoded_oath_string}"
+        auth_string = f"{self.client_id}:{self.client_secret}"
+        encoded_auth_string = encode_base64(auth_string)
+        password = f"Basic {encoded_auth_string}"
 
         headers = {
             "Content-Type":"application/x-www-form-urlencoded",
