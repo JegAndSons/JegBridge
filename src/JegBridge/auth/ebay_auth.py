@@ -1,8 +1,8 @@
 import requests
-import base64
 from typing import Optional, Callable, Dict
 from JegBridge.auth.base_auth import BaseAuth
 from JegBridge.utils.custom_exceptions import AuthenticationError
+from JegBridge.utils.base64_utils import encode_base64
 
 # TODO WHEN RESOLVED: Fix refresh token functionality so only gets new token when needed. Deal with access token errors such as invalid or like how it is in sandbox since ebay's sandbox is broken
 
@@ -66,7 +66,7 @@ class EbayAuth(BaseAuth):
         refresh_url = f"{self.base_url}identity/v1/oauth2/token"
 
         oath_string = f"{self.client_id}:{self.client_secret}"
-        encoded_oath_string = base64.b64encode(oath_string.encode('utf-8')).decode('utf-8')
+        encoded_oath_string = encode_base64(oath_string)
         password = f"Basic {encoded_oath_string}"
 
         headers = {

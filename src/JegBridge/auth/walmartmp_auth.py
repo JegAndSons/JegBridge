@@ -1,9 +1,9 @@
-import base64
 import uuid
 import requests
 from typing import Optional
 from JegBridge.auth.base_auth import BaseAuth
 from JegBridge.utils.custom_exceptions import AuthenticationError
+from JegBridge.utils.base64_utils import encode_base64
 
 class WalmartMPAuth(BaseAuth):
     """
@@ -53,7 +53,7 @@ class WalmartMPAuth(BaseAuth):
 
     def authenticate(self):
         auth_str = f"{self.client_id}:{self.client_secret}"
-        encoded_oath_string = base64.b64encode(auth_str.encode('utf-8')).decode('utf-8')
+        encoded_oath_string = encode_base64(auth_str)
         endpoint = "v3/token"
         token_url = self.base_url + endpoint
 
