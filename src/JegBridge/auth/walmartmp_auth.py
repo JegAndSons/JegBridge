@@ -53,12 +53,12 @@ class WalmartMPAuth(BaseAuth):
 
     def authenticate(self):
         auth_str = f"{self.client_id}:{self.client_secret}"
-        encoded_oath_string = encode_base64(auth_str)
+        encoded_auth_string = encode_base64(auth_str)
         endpoint = "v3/token"
         token_url = self.base_url + endpoint
 
         headers = {
-            "Authorization":f"Basic {encoded_oath_string}",
+            "Authorization":f"Basic {encoded_auth_string}",
             "Accept":"application/json",
             "WM_SVC.NAME":"Walmart Marketplace",
             "WM_QOS.CORRELATION_ID":self.generate_guid(),
