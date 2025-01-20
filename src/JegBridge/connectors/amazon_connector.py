@@ -25,6 +25,16 @@ class AmazonConnector(BaseConnector):
     def get_order(self, order_id: str) -> requests.Response:
         """
         Get specific order from Amazon
+
+        Args:
+            order_id(str): the order id to search for
+
+        Returns:
+            requests.Response: The response object that Amazon's api returns
+
+        Reference:
+            Amazon SP api documentation:
+            https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorder    
         """
         endpoint = f"/orders/v0/orders/{order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)

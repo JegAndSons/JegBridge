@@ -26,6 +26,16 @@ class BackmarketConnector(BaseConnector):
     def get_order(self, order_id: str) -> requests.Response:
         """
         Get specific order from Backmarket
+
+        Args:
+            order_id(str): the order id to search for
+
+        Returns:
+            requests.Response: The response object that Backmarket's api returns
+
+        Reference:
+            Amazon SP api documentation:
+            https://api.backmarket.dev/#/operations/get-ws-specific-order    
         """
         endpoint = f"ws/orders/{order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)

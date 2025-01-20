@@ -27,6 +27,16 @@ class WalmartMPConnector(BaseConnector):
     def get_order(self, purchase_order_id: str) -> requests.Response:
         """
         Get specific order from Walmart
+
+        Args:
+            purchase_order_id(str): the purchase order id to search for
+
+        Returns:
+            requests.Response: The response object that Walmart's api returns
+
+        Reference:
+            Amazon SP api documentation:
+            https://developer.walmart.com/api/us/mp/orders#operation/getAnOrder    
         """
         endpoint = f"v3/orders/{purchase_order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)
