@@ -75,6 +75,7 @@ class WalmartMPConnector(BaseConnector):
 
         Reference:
             Walmart Marketplace Returns API Documentation.
+            https://developer.walmart.com/api/us/mp/returns#operation/getReturns
         """
         endpoint = "v3/returns"  # Update this to the correct endpoint if needed
         params = {
