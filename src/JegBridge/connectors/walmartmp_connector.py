@@ -1,3 +1,4 @@
+import requests
 from typing import Optional
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
@@ -23,13 +24,13 @@ class WalmartMPConnector(BaseConnector):
         ]
         return mock_orders
     
-    def get_order(self, purchase_order_id: str) -> dict:
+    def get_order(self, purchase_order_id: str) -> requests.Response:
         """
         Get specific order from Walmart
         """
         endpoint = f"v3/orders/{purchase_order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)
-        return response.json()
+        return response
     
     def search_returns(
     self,
@@ -43,7 +44,7 @@ class WalmartMPConnector(BaseConnector):
         return_last_modified_start_date: Optional[str] = None,
         return_last_modified_end_date: Optional[str] = None,
         limit: Optional[int] = 10,
-    ) -> dict:
+    ) -> requests.Response:
         """
         Search for Walmart returns using the Walmart Marketplace Returns API.
 
@@ -60,7 +61,7 @@ class WalmartMPConnector(BaseConnector):
             limit (Optional[int]): The number of return orders to be returned (default: 10, max: 200).
 
         Returns:
-            dict: The API response as a JSON object.
+            requests.Response: The response object returned by the WalmartMP API.
 
         Reference:
             Walmart Marketplace Returns API Documentation.
@@ -85,8 +86,7 @@ class WalmartMPConnector(BaseConnector):
 
         response = self.auth.make_request("GET", endpoint=endpoint, params=params)
         print(response.url)
-        response.raise_for_status()
-        return response.json()
+        return response
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
@@ -109,5 +109,5 @@ if __name__ == "__main__":
 
     rma = connector.search_returns(return_order_id=rma_number)
     order = connector.get_order(purchase_order_id=purchase_order_number)
-    print(rma)
-    print(order)
+    print(rma.json())
+    print(order.json())

@@ -1,3 +1,4 @@
+import requests
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
 
@@ -21,13 +22,13 @@ class AmazonConnector(BaseConnector):
         ]
         return mock_orders
     
-    def get_order(self, order_id: str) -> dict:
+    def get_order(self, order_id: str) -> requests.Response:
         """
         Get specific order from Amazon
         """
         endpoint = f"/orders/v0/orders/{order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)
-        return response.json()
+        return response
 
 if __name__ == "__main__":
     import os
@@ -48,4 +49,4 @@ if __name__ == "__main__":
 
     order = connector.get_order(order_id)
 
-    print(order)
+    print(order.json())

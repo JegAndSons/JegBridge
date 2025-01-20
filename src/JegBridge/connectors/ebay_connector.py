@@ -1,3 +1,4 @@
+import requests
 from typing import Optional
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
@@ -22,11 +23,10 @@ class EbayConnector(BaseConnector):
         ]
         return mock_orders
     
-    def get_order(self, order_id: str) -> dict:
+    def get_order(self, order_id: str) -> requests.Response:
         endpoint = f"sell/fulfillment/v1/order/{order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint, get_headers_callback=self.auth.get_headers_with_bearer)
-        response.raise_for_status()
-        return response.json()
+        return response
 
     def search_returns(
         self,
@@ -42,7 +42,7 @@ class EbayConnector(BaseConnector):
         sort: Optional[str] = None,
         states: Optional[str] = None,
         transaction_id: Optional[str] = None
-    ) -> dict:
+    ) -> requests.Response:
         """
         Search for eBay returns using the eBay Post-Order API.
 
@@ -87,8 +87,7 @@ class EbayConnector(BaseConnector):
         params = {key: value for key, value in params.items() if value is not None}
 
         response = self.auth.make_request("GET", endpoint=endpoint, get_headers_callback=self.auth.get_headers_with_iaf, params=params)
-        response.raise_for_status()
-        return response.json()
+        return response
     
 if __name__ == "__main__":
     from dotenv import load_dotenv
@@ -115,8 +114,8 @@ if __name__ == "__main__":
     ebay_return = connector.search_returns(order_id=ebay_order_for_return_id)
     ebay_return2 = connector.search_returns(return_id=ebay_return_id)
 
-    print(order)
-    print(ebay_return)
-    print(ebay_return2)
+    print(order.json())
+    print(ebay_return.json())
+    print(ebay_return2.json())
     
     
