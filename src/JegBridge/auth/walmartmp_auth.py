@@ -2,7 +2,7 @@ import uuid
 import requests
 from typing import Optional
 from JegBridge.auth.base_auth import BaseAuth
-from JegBridge.utils.custom_exceptions import AuthenticationError
+from JegBridge.utils.custom_exceptions import AuthenticationError, TokenMissingError
 from JegBridge.utils.base64_utils import encode_base64
 
 class WalmartMPAuth(BaseAuth):
@@ -52,6 +52,12 @@ class WalmartMPAuth(BaseAuth):
         return self._prod_client_secret if self.use_production else self._dev_client_secret
 
     def authenticate(self):
+        """
+        Refreshes self.access_token
+
+        Raises:
+            AuthenticationError: If the authentication request fails or the response is invalid.
+        """
         auth_str = f"{self.client_id}:{self.client_secret}"
         encoded_auth_string = encode_base64(auth_str)
         endpoint = "v3/token"
@@ -63,14 +69,34 @@ class WalmartMPAuth(BaseAuth):
             "WM_SVC.NAME":"Walmart Marketplace",
             "WM_QOS.CORRELATION_ID":self.generate_guid(),
         }
-        data = {
+        request_data = {
             "grant_type":"client_credentials"
         }
 
-        response = requests.post(token_url, headers=headers, data=data)
+        try:
+            response = requests.post(token_url, headers=headers, data=request_data)
+            response.raise_for_status()
 
-        self.access_token = response.json().get('access_token')
-        response.raise_for_status()
+            response_data = response.json()
+
+            self.access_token = response_data.get('access_token')
+            if not self.access_token:
+                raise TokenMissingError(
+                    "Authentication succeeded but 'access_token' is missing in the response. "
+                    "Check the API response format or credentials."
+                )
+
+        except requests.exceptions.RequestException as e:
+            raise AuthenticationError(
+                f"Failed to authenticate with Amazon API. Check your network connection, API URL, "
+                f"or credentials. Details: {e}"
+            )
+
+        except ValueError as e:
+            raise AuthenticationError(
+                f"Failed to parse the authentication response as JSON. Ensure the API is returning valid JSON. "
+                f"Details: {e}"
+            )
 
 
     def get_headers(self) -> dict:

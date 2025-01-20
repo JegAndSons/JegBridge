@@ -72,8 +72,6 @@ class AmazonAuth(BaseAuth):
                     "Check the API response format or credentials."
                 )
 
-            return data
-
         except requests.exceptions.RequestException as e:
             raise AuthenticationError(
                 f"Failed to authenticate with Amazon API. Check your network connection, API URL, "

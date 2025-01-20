@@ -50,6 +50,9 @@ class BackmarketAuth(BaseAuth):
         return self._prod_client_secret if self.use_production else self._dev_client_secret
 
     def authenticate(self):
+        """
+        Formats and sets self.access_token
+        """
         auth_str = f"{self.client_id}:{self.client_secret}"
         encoded_auth_string = encode_base64(auth_str)
         self.access_token = f"Basic {encoded_auth_string}"

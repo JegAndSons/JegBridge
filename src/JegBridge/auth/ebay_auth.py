@@ -1,7 +1,7 @@
 import requests
 from typing import Optional, Callable, Dict
 from JegBridge.auth.base_auth import BaseAuth
-from JegBridge.utils.custom_exceptions import AuthenticationError
+from JegBridge.utils.custom_exceptions import AuthenticationError, TokenMissingError
 from JegBridge.utils.base64_utils import encode_base64
 
 # TODO WHEN RESOLVED: Fix refresh token functionality so only gets new token when needed. Deal with access token errors such as invalid or like how it is in sandbox since ebay's sandbox is broken
@@ -63,6 +63,12 @@ class EbayAuth(BaseAuth):
         return self._prod_refresh_token if self.use_production else self._dev_refresh_token
 
     def authenticate(self):
+        """
+        Refreshes self.access_token
+
+        Raises:
+            AuthenticationError: If the authentication request fails or the response is invalid.
+        """
         refresh_url = f"{self.base_url}identity/v1/oauth2/token"
 
         auth_string = f"{self.client_id}:{self.client_secret}"
@@ -79,11 +85,30 @@ class EbayAuth(BaseAuth):
             "refresh_token":self.refresh_token,
         }
 
-        response = requests.post(refresh_url,headers=headers,data=body)
+        try:
 
-        response_json = response.json()
+            response = requests.post(refresh_url,headers=headers,data=body)
+            response.raise_for_status()
 
-        self.access_token = response_json['access_token']
+            data = response.json()
+
+            self.access_token = data.get('access_token')
+            if not self.access_token:
+                raise TokenMissingError(
+                    "Authentication succeeded but 'access_token' is missing in the response. "
+                    "Check the API response format or credentials."
+                )
+        except requests.exceptions.RequestException as e:
+            raise AuthenticationError(
+                f"Failed to authenticate with Amazon API. Check your network connection, API URL, "
+                f"or credentials. Details: {e}"
+            )
+
+        except ValueError as e:
+            raise AuthenticationError(
+                f"Failed to parse the authentication response as JSON. Ensure the API is returning valid JSON. "
+                f"Details: {e}"
+            )
 
     def get_headers(self):
         raise NotImplementedError
