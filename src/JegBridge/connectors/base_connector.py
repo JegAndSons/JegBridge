@@ -19,3 +19,26 @@ class BaseConnector(ABC):
         """
         pass
 
+    @abstractmethod
+    def get_order(self,order_id: str) -> dict:
+        """
+        Get specific order from marketplace
+
+        Args:
+            order_id (str): The order id to search for
+
+        Returns:
+         dict: The markteplaces order object
+        """
+        pass
+    
+    @abstractmethod
+    def search_returns(self, *args, **kwargs):
+        """
+        Search for returns for a given marketplace with a given list of params
+
+        Returns:
+            list: list of return objects
+        """
+        pass
+
