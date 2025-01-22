@@ -1,0 +1,134 @@
+import requests
+from typing import Optional
+from JegBridge.connectors.base_connector import BaseConnector
+from JegBridge.auth.base_auth import BaseAuth
+
+class EbayConnector(BaseConnector):
+    """
+    Ebay-specific implementation of the connector.
+    """
+
+    def __init__(self, auth: BaseAuth):
+        super().__init__(auth)
+
+    def fetch_orders(self) -> list:
+        """
+        Fetch orders from Ebay.
+        """
+        mock_orders = [
+            {'ebay_order_id':1},
+            {'ebay_order_id':2},
+            {'ebay_order_id':3},
+            {'ebay_order_id':4},
+        ]
+        return mock_orders
+    
+    def get_order(self, order_id: str) -> requests.Response:
+        """
+        Get specific order from Ebay
+
+        Args:
+            order_id(str): the order id to search for
+
+        Returns:
+            requests.Response: The response object that Ebay's api returns
+
+        Reference:
+            Amazon SP api documentation:
+            https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrder    
+        """
+        endpoint = f"sell/fulfillment/v1/order/{order_id}"
+        response = self.auth.make_request("GET",endpoint=endpoint, get_headers_callback=self.auth.get_headers_with_bearer)
+        return response
+
+    def search_returns(
+        self,
+        creation_date_range_from: Optional[str] = None,
+        creation_date_range_to: Optional[str] = None,
+        item_id: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        order_id: Optional[str] = None,
+        return_id: Optional[str] = None,
+        return_state: Optional[str] = None,
+        role: Optional[str] = None,
+        sort: Optional[str] = None,
+        states: Optional[str] = None,
+        transaction_id: Optional[str] = None
+    ) -> requests.Response:
+        """
+        Search for eBay returns using the eBay Post-Order API.
+
+        Args:
+            creation_date_range_from (Optional[str]): The start date for the return creation date range in ISO 8601 format.
+            creation_date_range_to (Optional[str]): The end date for the return creation date range in ISO 8601 format.
+            item_id (Optional[str]): The unique identifier of the item involved in the return.
+            limit (Optional[int]): The maximum number of records to return in the response.
+            offset (Optional[int]): The number of records to skip before returning the response.
+            order_id (Optional[str]): The unique identifier of the order involved in the return.
+            return_id (Optional[str]): The unique identifier of the return request.
+            return_state (Optional[str]): Filter to count returns by their state (e.g., OPEN, CLOSED).
+            role (Optional[str]): The user role (e.g., BUYER, SELLER) to filter the returns.
+            sort (Optional[str]): The field to sort the results (e.g., creation_date).
+            states (Optional[str]): The state(s) of the return request (e.g., INITIATED, COMPLETED).
+            transaction_id (Optional[str]): The unique identifier of the transaction involved in the return.
+
+        Returns:
+            requests.Response: The response object returned by the eBay API.
+        
+        Reference:
+            eBay API Documentation: 
+            https://developer.ebay.com/Devzone/post-order/post-order_v2_return_search__get.html
+        """
+        endpoint = "post-order/v2/return/search"
+        params = {
+            "creation_date_range_from": creation_date_range_from,
+            "creation_date_range_to": creation_date_range_to,
+            "item_id": item_id,
+            "limit": limit,
+            "offset": offset,
+            "order_id": order_id,
+            "return_id": return_id,
+            "return_state": return_state,
+            "role": role,
+            "sort": sort,
+            "states": states,
+            "transaction_id": transaction_id
+        }
+
+        # Remove None values from params
+        params = {key: value for key, value in params.items() if value is not None}
+
+        response = self.auth.make_request("GET", endpoint=endpoint, get_headers_callback=self.auth.get_headers_with_iaf, params=params)
+        return response
+    
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    import os
+    from JegBridge.auth.ebay_auth import EbayAuth
+
+    load_dotenv()
+    auth = EbayAuth(
+        dev_client_id=os.getenv("EBAY_DEV_CLIENT_ID"),
+        dev_client_secret=os.getenv("EBAY_DEV_CLIENT_SECRET"),
+        dev_refresh_token=os.getenv("EBAY_DEV_REFRESH_TOKEN"),
+        prod_client_id=os.getenv("EBAY_PROD_CLIENT_ID"),
+        prod_client_secret=os.getenv("EBAY_PROD_CLIENT_SECRET"),
+        prod_refresh_token=os.getenv("EBAY_PROD_REFRESH_TOKEN"),
+    )
+    auth.use_production = True
+
+    connector = EbayConnector(auth=auth)
+
+    ebay_order_for_return_id = "08-12570-61105"
+    ebay_return_id = "5282832144"
+
+    order = connector.get_order(ebay_order_for_return_id)
+    ebay_return = connector.search_returns(order_id=ebay_order_for_return_id)
+    ebay_return2 = connector.search_returns(return_id=ebay_return_id)
+
+    print(order.json())
+    print(ebay_return.json())
+    print(ebay_return2.json())
+    
+    
