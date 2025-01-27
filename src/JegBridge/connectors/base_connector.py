@@ -1,18 +1,19 @@
 from abc import ABC, abstractmethod
 from JegBridge.auth.base_auth import BaseAuth
 
+
 class BaseConnector(ABC):
     """
     Abstract base class for marketplace connectors.
     """
 
-    def __init__(self,auth: BaseAuth):
+    def __init__(self, auth: BaseAuth):
         self.auth = auth
 
     @abstractmethod
-    def fetch_orders(self) -> list:
+    def get_orders(self) -> list:
         """
-        Fetch orders from the marketplace.
+        Get orders from the marketplace.
 
         Returns:
             list: A list of orders as returned by the marketplace API.
@@ -20,7 +21,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def get_order(self,order_id: str) -> dict:
+    def get_order(self, order_id: str) -> dict:
         """
         Get specific order from marketplace
 
@@ -31,7 +32,7 @@ class BaseConnector(ABC):
          dict: The markteplaces order object
         """
         pass
-    
+
     @abstractmethod
     def search_returns(self, *args, **kwargs):
         """
@@ -41,4 +42,3 @@ class BaseConnector(ABC):
             list: list of return objects
         """
         pass
-

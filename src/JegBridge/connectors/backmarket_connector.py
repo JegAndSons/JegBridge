@@ -11,9 +11,9 @@ class BackmarketConnector(BaseConnector):
     def __init__(self, auth: BaseAuth):
         super().__init__(auth)
 
-    def fetch_orders(self) -> list:
+    def get_orders(self) -> list:
         """
-        Fetch orders from Backmarket.
+        Get orders from Backmarket.
         """
         mock_orders = [
             {'backmarket_order_id':1},

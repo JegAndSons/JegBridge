@@ -12,9 +12,9 @@ class WalmartMPConnector(BaseConnector):
     def __init__(self, auth: BaseAuth):
         super().__init__(auth)
 
-    def fetch_orders(self) -> list:
+    def get_orders(self) -> list:
         """
-        Fetch orders from Walmart.
+        Get orders from Walmart.
         """
         mock_orders = [
             {'walmart_order_id':1},
