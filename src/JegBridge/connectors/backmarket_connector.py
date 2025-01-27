@@ -1,4 +1,5 @@
 import requests
+from typing import Optional, Dict, Any
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
 
@@ -11,9 +12,9 @@ class BackmarketConnector(BaseConnector):
     def __init__(self, auth: BaseAuth):
         super().__init__(auth)
 
-    def fetch_orders(self) -> list:
+    def get_orders(self) -> list:
         """
-        Fetch orders from Backmarket.
+        Get orders from Backmarket.
         """
         mock_orders = [
             {'backmarket_order_id':1},
@@ -40,6 +41,18 @@ class BackmarketConnector(BaseConnector):
         endpoint = f"ws/orders/{order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)
         return response
+    
+    def search_returns(self, filter_params: Optional[Dict[str,Any]]   ) -> requests.Response:
+        """
+        Search for returns for a given marketplace with a given list of params
+
+        Args:
+            filter_params (Optional[Dict[str,Any]]): dictionary of filter paramaters to send in request.
+
+        Returns:
+            list: list of return objects
+        """
+        raise NotImplementedError("Backmarket API does not support searching for returns")
     
     
 if __name__ == "__main__":
