@@ -1,4 +1,5 @@
 import requests
+from typing import Optional, Dict, Any
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
 
@@ -39,6 +40,18 @@ class AmazonConnector(BaseConnector):
         endpoint = f"/orders/v0/orders/{order_id}"
         response = self.auth.make_request("GET",endpoint=endpoint)
         return response
+    
+    def search_returns(self, filter_params: Optional[Dict[str,Any]]   ) -> requests.Response:
+        """
+        Search for returns for a given marketplace with a given list of params
+
+        Args:
+            filter_params (Optional[Dict[str,Any]]): dictionary of filter paramaters to send in request.
+
+        Returns:
+            list: list of return objects
+        """
+        raise NotImplementedError("Amazon API does not support searching for returns")
 
 if __name__ == "__main__":
     import os

@@ -1,4 +1,6 @@
+import requests
 from abc import ABC, abstractmethod
+from typing import Optional, Dict, Any
 from JegBridge.auth.base_auth import BaseAuth
 
 
@@ -34,9 +36,12 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def search_returns(self, *args, **kwargs):
+    def search_returns(self, filter_params: Optional[Dict[str,Any]]   ) -> requests.Response:
         """
         Search for returns for a given marketplace with a given list of params
+
+        Args:
+            filter_params (Optional[Dict[str,Any]]): dictionary of filter paramaters to send in request.
 
         Returns:
             list: list of return objects
