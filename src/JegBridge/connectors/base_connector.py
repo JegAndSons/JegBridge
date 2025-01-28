@@ -23,7 +23,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    def get_order(self, order_id: str) -> dict:
+    def get_order(self, order_id: str) -> requests.Response:
         """
         Get specific order from marketplace
 
