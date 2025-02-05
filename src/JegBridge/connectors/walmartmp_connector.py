@@ -59,7 +59,6 @@ class WalmartMPConnector(BaseConnector):
         endpoint = "v3/returns"  # Update this to the correct endpoint if needed
 
         response = self.auth.make_request("GET", endpoint=endpoint, params=filter_params)
-        print(response.url)
         return response
 
 if __name__ == "__main__":
