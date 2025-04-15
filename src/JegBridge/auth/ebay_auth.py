@@ -1,10 +1,9 @@
+import time
 import requests
 from typing import Optional, Callable, Dict
 from JegBridge.auth.base_auth import BaseAuth
 from JegBridge.utils.custom_exceptions import AuthenticationError, TokenMissingError
 from JegBridge.utils.base64_utils import encode_base64
-
-# TODO WHEN RESOLVED: Fix refresh token functionality so only gets new token when needed. Deal with access token errors such as invalid or like how it is in sandbox since ebay's sandbox is broken
 
 class EbayAuth(BaseAuth):
     """
@@ -49,6 +48,7 @@ class EbayAuth(BaseAuth):
         self._prod_client_secret = prod_client_secret
         self._prod_refresh_token = prod_refresh_token
         self.access_token: Optional[str] = None
+        self.token_expiry: Optional[float] = None
 
     @property
     def client_id(self) -> str:
@@ -61,6 +61,17 @@ class EbayAuth(BaseAuth):
     @property
     def refresh_token(self) -> str:
         return self._prod_refresh_token if self.use_production else self._dev_refresh_token
+    
+    def _is_token_valid(self) -> bool:
+        return (
+            self.access_token is not None and
+            self.token_expiry is not None and
+            time.time() < self.token_expiry - 60  # leave 60s buffer
+        )
+
+    def _ensure_token(self) -> None:
+        if not self._is_token_valid():
+            self.authenticate()
 
     def authenticate(self):
         """
@@ -93,14 +104,19 @@ class EbayAuth(BaseAuth):
             data = response.json()
 
             self.access_token = data.get('access_token')
+            expires_in = data.get('expires_in')
+
             if not self.access_token:
                 raise TokenMissingError(
                     "Authentication succeeded but 'access_token' is missing in the response. "
                     "Check the API response format or credentials."
                 )
+            
+            self.token_expiry = time.time() + expires_in if expires_in else None
+
         except requests.exceptions.RequestException as e:
             raise AuthenticationError(
-                f"Failed to authenticate with Amazon API. Check your network connection, API URL, "
+                f"Failed to authenticate with eBay API. Check your network connection, API URL, "
                 f"or credentials. Details: {e}"
             )
 
@@ -109,7 +125,8 @@ class EbayAuth(BaseAuth):
                 f"Failed to parse the authentication response as JSON. Ensure the API is returning valid JSON. "
                 f"Details: {e}"
             )
-
+        
+    
     def get_headers(self):
         raise NotImplementedError
     
@@ -117,7 +134,8 @@ class EbayAuth(BaseAuth):
         """
         Get headers that pass bearer token, like for fulfillment api
         """
-        self.authenticate()
+        self._ensure_token() 
+
         # Ensure the access token exists before returning headers
         if not self.access_token:
             raise AuthenticationError(
@@ -128,11 +146,13 @@ class EbayAuth(BaseAuth):
             "Content-Type": "application/json",  # Required for JSON payloads
         }
         return headers
+    
     def get_headers_with_iaf(self):
         """
         Get headers that pass iaf token, like for post-order api
         """
-        self.authenticate()
+        self._ensure_token() 
+
         # Ensure the access token exists before returning headers
         if not self.access_token:
             raise AuthenticationError(
