@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
-from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
+# from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
 
 class AmazonConnector(BaseConnector, AmazonReportHandler):
     """
