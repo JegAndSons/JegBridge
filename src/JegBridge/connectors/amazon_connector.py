@@ -6,7 +6,7 @@ from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
 # from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
 
-class AmazonConnector(BaseConnector, AmazonReportHandler):
+class AmazonConnector(BaseConnector):
     """
     Amazon-specific implementation of the connector.
     """
