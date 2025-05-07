@@ -88,9 +88,8 @@ class BackmarketAuth(BaseAuth):
 if __name__ == "__main__":
     from dotenv import load_dotenv
     import os
-    load_dotenv(
+    load_dotenv(override=True)
 
-    )
     auth = BackmarketAuth(
         dev_client_id=os.getenv("BACKMARKET_DEV_CLIENT_ID"),
         dev_client_secret=os.getenv("BACKMARKET_DEV_CLIENT_SECRET"),
@@ -98,6 +97,8 @@ if __name__ == "__main__":
         prod_client_secret=os.getenv("BACKMARKET_TOKEN"),
     )
     auth.use_production = True
+    print(auth.base_url)
+    print(auth._prod_client_secret)
     auth.authenticate()
     print(auth.base_url)
 
