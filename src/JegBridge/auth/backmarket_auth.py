@@ -5,13 +5,13 @@ from JegBridge.utils.base64_utils import encode_base64
 
 class BackmarketAuth(BaseAuth):
     """
-    WalmartMP-specific authentication using OAuth2.
+    Backmarket-specific authentication using OAuth2.
     """
 
     def __init__(
         self,
-        dev_client_id: str,
-        dev_client_secret: str,
+        dev_client_id: str = None,
+        dev_client_secret: str = None,
         prod_client_id: str = None,
         prod_client_secret: str = None,
         use_production: bool = False,
@@ -53,9 +53,9 @@ class BackmarketAuth(BaseAuth):
         """
         Formats and sets self.access_token
         """
-        auth_str = f"{self.client_id}:{self.client_secret}"
-        encoded_auth_string = encode_base64(auth_str)
-        self.access_token = f"Basic {encoded_auth_string}"
+        auth_str = f"{self.client_secret}"
+        # encoded_auth_string = encode_base64(auth_str)
+        self.access_token = f"Basic {auth_str}"
 
 
     def get_headers(self) -> dict:
@@ -94,8 +94,8 @@ if __name__ == "__main__":
     auth = BackmarketAuth(
         dev_client_id=os.getenv("BACKMARKET_DEV_CLIENT_ID"),
         dev_client_secret=os.getenv("BACKMARKET_DEV_CLIENT_SECRET"),
-        prod_client_id=os.getenv("BACKMARKET_PROD_CLIENT_ID"),
-        prod_client_secret=os.getenv("BACKMARKET_PROD_CLIENT_SECRET"),
+        prod_client_id=os.getenv("BACKMARKET_ID"),
+        prod_client_secret=os.getenv("BACKMARKET_TOKEN"),
     )
     auth.use_production = True
     auth.authenticate()
