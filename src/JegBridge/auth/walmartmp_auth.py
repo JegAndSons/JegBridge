@@ -24,8 +24,8 @@ class WalmartMPAuth(BaseAuth):
         Initialize the WalmartAuth object.
 
         Args:
-            client_id (str): Walamrt client ID.
-            client_secret (str): Walamrt client secret.
+            client_id (str): Walmart client ID.
+            client_secret (str): Walmart client secret.
             refresh_token (str): Refresh token for OAuth2.
             use_production (bool): Whether to use the production environment.
             sandbox_url (str): Optional custom sandbox URL.
