@@ -1,11 +1,13 @@
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
 # from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
+# from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
 
+# class AmazonConnector(BaseConnector):
 class AmazonConnector(BaseConnector):
     """
     Amazon-specific implementation of the connector.
@@ -20,13 +22,22 @@ class AmazonConnector(BaseConnector):
         """
         Get orders from Amazon.
         """
-        mock_orders = [
-            {'amazon_order_id':1},
-            {'amazon_order_id':2},
-            {'amazon_order_id':3},
-            {'amazon_order_id':4},
-        ]
-        return mock_orders
+
+        pending_orders_params = {
+        "MarketplaceIds": ["ATVPDKIKX0DER","A2EUQ1WTGCTBG2"],
+        "CreatedAfter": (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "OrderStatuses": "Unshipped",
+        }
+
+        endpoint = "orders/v0/orders"
+
+        response = self.auth.make_request("GET",endpoint=endpoint, params=pending_orders_params)
+
+        try:
+            orders = response.json()["payload"]["Orders"]
+        except:
+            orders = [{"error":f"error getting orders: {response.json()}"}]
+        return orders
     
     def get_order(self, order_id: str) -> requests.Response:
         """
@@ -149,5 +160,6 @@ if __name__ == "__main__":
     order_id = "111-3749347-1157024"
 
     order = connector.get_order(order_id)
+    orders = connector.get_orders()
 
-    print(order.json())
+
