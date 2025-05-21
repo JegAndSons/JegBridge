@@ -4,11 +4,9 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
-# from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
-# from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
-
-# class AmazonConnector(BaseConnector):
-class AmazonConnector(BaseConnector):
+from JegBridge.mixins.amazon_report_handler import AmazonReportHandler
+# class AmazonConnector(BaseConnector, AmazonReportHandler):
+class AmazonConnector(BaseConnector, AmazonReportHandler):
     """
     Amazon-specific implementation of the connector.
     """
@@ -124,10 +122,9 @@ class AmazonConnector(BaseConnector):
         
         return response
     
-    def get_doc_url(self,doc_id):
+    def get_doc_url(self, doc_id):
         endpoint = f"reports/2021-06-30/documents/{doc_id}"
         response = self.auth.make_request("GET", endpoint)
-
         return response
     
     def get_listing(self, sku):
@@ -157,9 +154,46 @@ if __name__ == "__main__":
     
     connector = AmazonConnector(auth=auth)
 
-    order_id = "111-3749347-1157024"
+    # order_id = "111-3749347-1157024"
 
-    order = connector.get_order(order_id)
-    orders = connector.get_orders()
+    # order = connector.get_order(order_id)
+    # print(order.json())
+    # orders = connector.get_orders()
 
+
+
+    print("trying to create report..........................................................")
+    # create_report_response = connector.create_report(
+    #     report_type="GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE",
+    #     marketplaces=["ATVPDKIKX0DER"],
+    #     data_start_date=datetime.now(timezone.utc) - timedelta(days=30),
+    #     data_end_date=None,
+    #     report_options={}
+    # )
+    # print(create_report_response.json())
+    # report_id = create_report_response.json()["reportId"]
+    
+    report_id = "1708293020229"
+    report_info = connector.get_report_info(report_id)
+    report_info_json = report_info.json()
+    # print(report_info_json)
+
+    # Extract the document ID from the report info
+    report_document_id = report_info_json.get("reportDocumentId")
+    # print(f"report_document_id: {report_document_id}")
+    if report_document_id:
+        doc_response = connector.get_doc_url(report_document_id)
+        doc_info = doc_response.json()
+        # print(f"doc_info: {doc_info}")
+
+        presigned_url = doc_info.get("url")
+        # print(f"presigned_url: {presigned_url}")
+
+        if presigned_url:
+            report_response = requests.get(presigned_url)
+            if report_response.status_code == 200:
+                report_data = report_response.content
+                # print(f"report_data: {report_data[:500]}")
+            else:
+                print(f"Failed to download report. Status code: {report_response.status_code}")
 
