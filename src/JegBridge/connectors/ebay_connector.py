@@ -13,33 +13,38 @@ class EbayConnector(BaseConnector):
 
     def get_orders(self) -> list:
         """
-        Get orders from Ebay.
+        Get orders from eBay.
+
+        Returns:
+            list: A list of order objects as returned by the eBay Fulfillment API.
+
+        Reference:
+            https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrders
         """
-        mock_orders = [
-            {'ebay_order_id':1},
-            {'ebay_order_id':2},
-            {'ebay_order_id':3},
-            {'ebay_order_id':4},
-        ]
-        return mock_orders
+        response = self.auth.make_request(
+            "GET",
+            endpoint="sell/fulfillment/v1/order",
+            get_headers_callback=self.auth.get_headers_with_bearer,
+            params={"limit": 100}
+        )
+        return response.json().get("orders", [])
     
-    def get_order(self, order_id: str) -> requests.Response:
+    def get_order(self, order_id: str) -> dict:
         """
-        Get specific order from Ebay
+        Get specific order from eBay.
 
         Args:
             order_id(str): the order id to search for
 
         Returns:
-            requests.Response: The response object that Ebay's api returns
+            dict: The order object.
 
         Reference:
-            Amazon SP api documentation:
-            https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrder    
+            https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrder
         """
         endpoint = f"sell/fulfillment/v1/order/{order_id}"
-        response = self.auth.make_request("GET",endpoint=endpoint, get_headers_callback=self.auth.get_headers_with_bearer)
-        return response
+        response = self.auth.make_request("GET", endpoint=endpoint, get_headers_callback=self.auth.get_headers_with_bearer)
+        return response.json()
 
     def search_returns(self, filter_params: Optional[Dict[str,Any]]   ) -> requests.Response:
         """

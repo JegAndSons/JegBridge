@@ -15,32 +15,40 @@ class BackmarketConnector(BaseConnector):
     def get_orders(self) -> list:
         """
         Get orders from Backmarket.
+
+        Returns:
+            list: A list of order objects as returned by the Backmarket API.
+
+        Raises:
+            KeyError: If the response structure is unexpected.
+
+        Reference:
+            https://api.backmarket.dev/#/operations/get-ws-orders
         """
-        mock_orders = [
-            {'backmarket_order_id':1},
-            {'backmarket_order_id':2},
-            {'backmarket_order_id':3},
-            {'backmarket_order_id':4},
-        ]
-        return mock_orders
+        response = self.auth.make_request("GET", endpoint="ws/orders")
+        data = response.json()
+
+        if "results" not in data:
+            raise KeyError(f"Unexpected response structure from Backmarket orders API: {data}")
+
+        return data["results"]
     
-    def get_order(self, order_id: str) -> requests.Response:
+    def get_order(self, order_id: str) -> dict:
         """
-        Get specific order from Backmarket
+        Get specific order from Backmarket.
 
         Args:
             order_id(str): the order id to search for
 
         Returns:
-            requests.Response: The response object that Backmarket's api returns
+            dict: The order object.
 
         Reference:
-            Amazon SP api documentation:
-            https://api.backmarket.dev/#/operations/get-ws-specific-order    
+            https://api.backmarket.dev/#/operations/get-ws-specific-order
         """
         endpoint = f"ws/orders/{order_id}"
-        response = self.auth.make_request("GET",endpoint=endpoint)
-        return response
+        response = self.auth.make_request("GET", endpoint=endpoint)
+        return response.json()
     
     def search_returns(self, filter_params: Optional[Dict[str,Any]]   ) -> requests.Response:
         """

@@ -14,33 +14,53 @@ class WalmartMPConnector(BaseConnector):
 
     def get_orders(self) -> list:
         """
-        Get orders from Walmart.
+        Get orders from Walmart Marketplace.
+
+        Returns:
+            list: A list of order objects as returned by the Walmart MP API.
+
+        Raises:
+            KeyError: If the response structure is unexpected.
+
+        Reference:
+            https://developer.walmart.com/api/us/mp/orders#operation/getAllOrders
         """
-        mock_orders = [
-            {'walmart_order_id':1},
-            {'walmart_order_id':2},
-            {'walmart_order_id':3},
-            {'walmart_order_id':4},
-        ]
-        return mock_orders
+        response = self.auth.make_request(
+            "GET",
+            endpoint="v3/orders",
+            params={"limit": 100, "status": "Created,Acknowledged"}
+        )
+        data = response.json()
+
+        try:
+            return data["list"]["elements"]["order"]
+        except KeyError:
+            raise KeyError(f"Unexpected response structure from Walmart orders API: {data}")
     
-    def get_order(self, purchase_order_id: str) -> requests.Response:
+    def get_order(self, purchase_order_id: str) -> dict:
         """
-        Get specific order from Walmart
+        Get specific order from Walmart.
 
         Args:
             purchase_order_id(str): the purchase order id to search for
 
         Returns:
-            requests.Response: The response object that Walmart's api returns
+            dict: The order object.
+
+        Raises:
+            KeyError: If the response structure is unexpected.
 
         Reference:
-            Amazon SP api documentation:
-            https://developer.walmart.com/api/us/mp/orders#operation/getAnOrder    
+            https://developer.walmart.com/api/us/mp/orders#operation/getAnOrder
         """
         endpoint = f"v3/orders/{purchase_order_id}"
-        response = self.auth.make_request("GET",endpoint=endpoint)
-        return response
+        response = self.auth.make_request("GET", endpoint=endpoint)
+        data = response.json()
+
+        if "order" not in data:
+            raise KeyError(f"Unexpected response structure from Walmart get_order API: {data}")
+
+        return data["order"]
     
     def search_returns(self, filter_params: Optional[Dict[str,Any]]   ) -> requests.Response:
         """
