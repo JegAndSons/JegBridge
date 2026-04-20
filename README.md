@@ -10,7 +10,7 @@ Install in editable mode:
 pip install -e .
 ```
 
-To instll from repo:
+To install from repo:
 
 ```bash
 pip install git+https://github.com/JegAndSons/JegBridge.git
