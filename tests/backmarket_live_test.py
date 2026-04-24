@@ -40,11 +40,22 @@ def test_authentication():
     print("PASSED")
 
 
+def test_pagination_info():
+    print("\n--- test_pagination_info ---")
+    connector = make_connector()
+    response = connector.auth.make_request("GET", endpoint="ws/orders")
+    data = response.json()
+    print(f"Total orders (count): {data.get('count')}")
+    print(f"Results on this page: {len(data.get('results', []))}")
+    print(f"Next page URL: {data.get('next')}")
+
+
 def test_get_orders():
     print("\n--- test_get_orders ---")
     connector = make_connector()
-    orders = connector.get_orders()
+    orders = connector.get_orders(max_pages=1)
     assert isinstance(orders, list), f"Expected list, got {type(orders)}"
+    assert len(orders) <= 50, f"Expected at most 50 orders per page, got {len(orders)}"
     print(f"Orders retrieved: {len(orders)}")
     if orders:
         print(f"First order ID: {orders[0].get('order_id')}")
@@ -59,9 +70,8 @@ def test_get_order():
         print("SKIPPED — no orders available to test get_order")
         return
     order_id = str(orders[0].get("order_id"))
-    response = connector.get_order(order_id)
-    assert response.ok, f"Request failed with status {response.status_code}: {response.text}"
-    data = response.json()
+    data = connector.get_order(order_id)
+    assert isinstance(data, dict), f"Expected dict, got {type(data)}"
     print(f"Order retrieved: {data.get('order_id')}")
     print("PASSED")
 
@@ -69,6 +79,7 @@ def test_get_order():
 if __name__ == "__main__":
     print("Running Backmarket live integration tests...")
     test_authentication()
+    test_pagination_info()
     test_get_orders()
     test_get_order()
     print("\nAll live tests completed.")

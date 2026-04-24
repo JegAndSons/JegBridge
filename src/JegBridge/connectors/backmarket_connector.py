@@ -1,5 +1,6 @@
 import requests
 from typing import Optional, Dict, Any
+from urllib.parse import urlparse
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
 
@@ -12,9 +13,13 @@ class BackmarketConnector(BaseConnector):
     def __init__(self, auth: BaseAuth):
         super().__init__(auth)
 
-    def get_orders(self) -> list:
+    def get_orders(self, filter_params: Optional[Dict[str, Any]] = None, max_pages: int = 3) -> list:
         """
         Get orders from Backmarket.
+
+        Args:
+            filter_params (Optional[Dict[str, Any]]): API filter params (e.g. state, date_creation, country_code).
+            max_pages (int): Maximum number of pages to fetch. Defaults to 3 (150 orders).
 
         Returns:
             list: A list of order objects as returned by the Backmarket API.
@@ -25,13 +30,30 @@ class BackmarketConnector(BaseConnector):
         Reference:
             https://api.backmarket.dev/#/operations/get-ws-orders
         """
-        response = self.auth.make_request("GET", endpoint="ws/orders")
-        data = response.json()
+        all_orders = []
+        endpoint = "ws/orders"
+        params = {**(filter_params or {}), "page-size": 50}
+        pages_fetched = 0
 
-        if "results" not in data:
-            raise KeyError(f"Unexpected response structure from Backmarket orders API: {data}")
+        while endpoint and pages_fetched < max_pages:
+            response = self.auth.make_request("GET", endpoint=endpoint, params=params)
+            data = response.json()
 
-        return data["results"]
+            if "results" not in data:
+                raise KeyError(f"Unexpected response structure from Backmarket orders API: {data}")
+
+            all_orders.extend(data["results"])
+            pages_fetched += 1
+
+            next_url = data.get("next")
+            if next_url:
+                parsed = urlparse(next_url)
+                endpoint = (parsed.path + ("?" + parsed.query if parsed.query else "")).lstrip("/")
+                params = {}
+            else:
+                endpoint = None
+
+        return all_orders
     
     def get_order(self, order_id: str) -> dict:
         """
