@@ -1,4 +1,5 @@
 import requests
+import urllib.parse
 from typing import Optional, Dict, Any
 from JegBridge.connectors.base_connector import BaseConnector
 from JegBridge.auth.base_auth import BaseAuth
@@ -32,6 +33,7 @@ class WalmartMPConnector(BaseConnector):
         all_orders = []
         params = {**(filter_params or {}), "limit": 100}
         pages_fetched = 0
+        prev_cursor = None
 
         while pages_fetched < max_pages:
             response = self.auth.make_request("GET", endpoint="v3/orders", params=params)
@@ -45,10 +47,17 @@ class WalmartMPConnector(BaseConnector):
             except KeyError:
                 raise KeyError(f"Unexpected response structure from Walmart orders API: {data}")
 
-            if not next_cursor:
+            if not next_cursor or len(orders) < 100:
                 break
 
-            params = {"nextCursor": next_cursor}
+            next_parsed = dict(urllib.parse.parse_qsl(next_cursor.lstrip('?')))
+            prev_parsed = dict(urllib.parse.parse_qsl((prev_cursor or '').lstrip('?')))
+            if next_parsed.get('cursor') == prev_parsed.get('cursor'):
+                break
+
+            prev_cursor = next_cursor
+            params = next_parsed
+
 
         return all_orders
     
