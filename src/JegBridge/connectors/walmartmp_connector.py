@@ -12,9 +12,13 @@ class WalmartMPConnector(BaseConnector):
     def __init__(self, auth: BaseAuth):
         super().__init__(auth)
 
-    def get_orders(self) -> list:
+    def get_orders(self, filter_params: Optional[Dict[str, Any]] = None, max_pages: int = 5) -> list:
         """
         Get orders from Walmart Marketplace.
+
+        Args:
+            filter_params (Optional[Dict[str, Any]]): API filter params (e.g. status, createdStartDate).
+            max_pages (int): Maximum number of pages to fetch. Defaults to 5 (500 orders).
 
         Returns:
             list: A list of order objects as returned by the Walmart MP API.
@@ -25,17 +29,28 @@ class WalmartMPConnector(BaseConnector):
         Reference:
             https://developer.walmart.com/api/us/mp/orders#operation/getAllOrders
         """
-        response = self.auth.make_request(
-            "GET",
-            endpoint="v3/orders",
-            params={"limit": 100, "status": "Created,Acknowledged"}
-        )
-        data = response.json()
+        all_orders = []
+        params = {**(filter_params or {}), "limit": 100}
+        pages_fetched = 0
 
-        try:
-            return data["list"]["elements"]["order"]
-        except KeyError:
-            raise KeyError(f"Unexpected response structure from Walmart orders API: {data}")
+        while pages_fetched < max_pages:
+            response = self.auth.make_request("GET", endpoint="v3/orders", params=params)
+            data = response.json()
+
+            try:
+                orders = data["list"]["elements"]["order"]
+                all_orders.extend(orders)
+                pages_fetched += 1
+                next_cursor = data["list"]["meta"].get("nextCursor")
+            except KeyError:
+                raise KeyError(f"Unexpected response structure from Walmart orders API: {data}")
+
+            if not next_cursor:
+                break
+
+            params = {"nextCursor": next_cursor}
+
+        return all_orders
     
     def get_order(self, purchase_order_id: str) -> dict:
         """
